@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.1.2
+  share_plus: ^10.1.4
   http: ^1.2.2
 
 dev_dependencies:
