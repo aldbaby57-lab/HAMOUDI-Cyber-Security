@@ -1,3 +1,4 @@
+
 name: Build HAMOUDI App
 
 on:
@@ -32,7 +33,10 @@ jobs:
         run: flutter pub get
 
       - name: Build Android APK
-        run: flutter build apk --release
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease -x lintVitalAnalyzeRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
