@@ -54,6 +54,10 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int selectedIndex = 0;
 
+  // لا تجعلها true يدويًا.
+  // تفعيل PRO الحقيقي يحتاج التحقق من المتجر.
+  final bool isPro = false;
+
   void openPage(Widget page) {
     Navigator.push(
       context,
@@ -61,12 +65,36 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
+  void openProFeature(String feature) {
+    if (isPro) {
+      if (feature == 'مشاركة الصور') {
+        openPage(const PhotoSharePage());
+      } else if (feature == 'التقارير الأمنية') {
+        openPage(const ReportsPage());
+      } else if (feature == 'سجل الفحوصات') {
+        openPage(const HistoryPage());
+      } else if (feature == 'التنبيهات') {
+        openPage(const AlertsPage());
+      }
+    } else {
+      openPage(SubscriptionPage(isPro: isPro));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(onOpen: openPage),
-      ToolsPage(onOpen: openPage),
-      const SubscriptionPage(),
+      HomePage(
+        onOpen: openPage,
+        onProFeature: openProFeature,
+        isPro: isPro,
+      ),
+      ToolsPage(
+        onOpen: openPage,
+        onProFeature: openProFeature,
+        isPro: isPro,
+      ),
+      SubscriptionPage(isPro: isPro),
       const AccountPage(),
     ];
 
@@ -76,7 +104,9 @@ class _MainShellState extends State<MainShell> {
         body: SafeArea(child: pages[selectedIndex]),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: selectedIndex,
-          onTap: (index) => setState(() => selectedIndex = index),
+          onTap: (index) {
+            setState(() => selectedIndex = index);
+          },
           type: BottomNavigationBarType.fixed,
           backgroundColor: panel,
           selectedItemColor: blue,
@@ -109,8 +139,15 @@ class _MainShellState extends State<MainShell> {
 
 class HomePage extends StatelessWidget {
   final void Function(Widget) onOpen;
+  final void Function(String) onProFeature;
+  final bool isPro;
 
-  const HomePage({super.key, required this.onOpen});
+  const HomePage({
+    super.key,
+    required this.onOpen,
+    required this.onProFeature,
+    required this.isPro,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +161,6 @@ class HomePage extends StatelessWidget {
           'HAMOUDI Cyber Security',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: white,
             fontSize: 23,
             fontWeight: FontWeight.bold,
           ),
@@ -135,33 +171,67 @@ class HomePage extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),
-        const SizedBox(height: 28),
-        const SectionTitle(title: 'الخدمات الرئيسية'),
-        FeatureLine(
-          icon: Icons.photo_library,
-          title: 'مشاركة الصور',
-          subtitle: 'اختر الصور وشاركها بنفسك',
-          onTap: () => onOpen(const PhotoSharePage()),
+        const SizedBox(height: 12),
+        Center(
+          child: Chip(
+            avatar: Icon(
+              isPro ? Icons.workspace_premium : Icons.person,
+              color: blue,
+            ),
+            label: Text(isPro ? 'HAMOUDI PRO' : 'الخطة المجانية'),
+            backgroundColor: panel,
+          ),
         ),
+        const SizedBox(height: 22),
+        const SectionTitle(title: 'الأدوات الأساسية'),
         FeatureLine(
           icon: Icons.link,
           title: 'فحص الروابط',
-          subtitle: 'تحقق من علامات الروابط المشبوهة',
+          subtitle: 'فحص مبدئي لعلامات الروابط المشبوهة',
           onTap: () => onOpen(const LinkCheckerPage()),
         ),
         FeatureLine(
           icon: Icons.lock,
           title: 'قوة كلمات المرور',
-          subtitle: 'قيّم قوة كلمة المرور',
+          subtitle: 'تقييم محلي لكلمة المرور',
           onTap: () => onOpen(const PasswordPage()),
         ),
         FeatureLine(
           icon: Icons.phone_android,
           title: 'أمان الهاتف',
-          subtitle: 'راجع خطوات حماية جهازك',
+          subtitle: 'إرشادات لحماية جهازك',
           onTap: () => onOpen(const PhoneSecurityPage()),
         ),
-        const SizedBox(height: 22),
+        const SectionTitle(title: 'ميزات HAMOUDI PRO'),
+        FeatureLine(
+          icon: Icons.photo_library,
+          title: 'مشاركة الصور',
+          subtitle: 'مشاركة الصور باختيارك',
+          locked: !isPro,
+          onTap: () => onProFeature('مشاركة الصور'),
+        ),
+        FeatureLine(
+          icon: Icons.analytics,
+          title: 'التقارير الأمنية',
+          subtitle: 'تقارير ونتائج الفحوصات',
+          locked: !isPro,
+          onTap: () => onProFeature('التقارير الأمنية'),
+        ),
+        FeatureLine(
+          icon: Icons.history,
+          title: 'سجل الفحوصات',
+          subtitle: 'متابعة الفحوصات السابقة',
+          locked: !isPro,
+          onTap: () => onProFeature('سجل الفحوصات'),
+        ),
+        FeatureLine(
+          icon: Icons.notifications_active,
+          title: 'التنبيهات الأمنية',
+          subtitle: 'توعية وتنبيهات أمنية',
+          locked: !isPro,
+          onTap: () => onProFeature('التنبيهات'),
+        ),
+        const SizedBox(height: 15),
         const InfoCard(
           icon: Icons.verified_user,
           title: 'حافظ على أمانك الرقمي',
@@ -177,8 +247,15 @@ class HomePage extends StatelessWidget {
 
 class ToolsPage extends StatelessWidget {
   final void Function(Widget) onOpen;
+  final void Function(String) onProFeature;
+  final bool isPro;
 
-  const ToolsPage({super.key, required this.onOpen});
+  const ToolsPage({
+    super.key,
+    required this.onOpen,
+    required this.onProFeature,
+    required this.isPro,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +272,7 @@ class ToolsPage extends StatelessWidget {
         FeatureLine(
           icon: Icons.password,
           title: 'قوة كلمات المرور',
-          subtitle: 'تقييم قوة كلمة المرور محليًا',
+          subtitle: 'تقييم كلمة المرور محليًا',
           onTap: () => onOpen(const PasswordPage()),
         ),
         FeatureLine(
@@ -204,18 +281,155 @@ class ToolsPage extends StatelessWidget {
           subtitle: 'قائمة خطوات الأمان',
           onTap: () => onOpen(const PhoneSecurityPage()),
         ),
+        const SectionTitle(title: 'أدوات PRO'),
         FeatureLine(
           icon: Icons.photo_library,
           title: 'مشاركة الصور',
-          subtitle: 'اختيار الصور ومشاركتها',
-          onTap: () => onOpen(const PhotoSharePage()),
+          subtitle: 'مشاركة الصور باختيار المستخدم',
+          locked: !isPro,
+          onTap: () => onProFeature('مشاركة الصور'),
+        ),
+        FeatureLine(
+          icon: Icons.analytics,
+          title: 'التقارير الأمنية',
+          subtitle: 'تقارير الفحوصات',
+          locked: !isPro,
+          onTap: () => onProFeature('التقارير الأمنية'),
+        ),
+        FeatureLine(
+          icon: Icons.history,
+          title: 'سجل الفحوصات',
+          subtitle: 'الرجوع إلى النتائج السابقة',
+          locked: !isPro,
+          onTap: () => onProFeature('سجل الفحوصات'),
+        ),
+        FeatureLine(
+          icon: Icons.notifications,
+          title: 'التنبيهات',
+          subtitle: 'التوعية بالمخاطر الرقمية',
+          locked: !isPro,
+          onTap: () => onProFeature('التنبيهات'),
         ),
       ],
     );
   }
 }
 
-// أداة فحص الروابط
+// صفحة الاشتراكات
+
+class SubscriptionPage extends StatelessWidget {
+  final bool isPro;
+
+  const SubscriptionPage({super.key, required this.isPro});
+
+  void showNotActive(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'الشراء الإلكتروني لم يتم تفعيله بعد. سيتم تفعيله بعد إعداد المتجر.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(18),
+      children: [
+        const Icon(
+          Icons.workspace_premium,
+          color: blue,
+          size: 65,
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'HAMOUDI PRO',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'ارتقِ بحمايتك الرقمية',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 20),
+        if (isPro)
+          const InfoCard(
+            icon: Icons.verified,
+            title: 'أنت مشترك في PRO',
+            description: 'حالة العرض فقط؛ يجب التحقق من اشتراك المتجر.',
+          ),
+        const SectionTitle(title: 'مميزات PRO'),
+        const BenefitLine(
+          icon: Icons.link,
+          title: 'فحص روابط متقدم',
+          subtitle: 'تحليل إضافي باستخدام خدمات موثوقة عند ربطها.',
+        ),
+        const BenefitLine(
+          icon: Icons.history,
+          title: 'سجل الفحوصات',
+          subtitle: 'الاحتفاظ بنتائج الفحوصات ومراجعتها.',
+        ),
+        const BenefitLine(
+          icon: Icons.analytics,
+          title: 'تقارير أمنية',
+          subtitle: 'عرض النتائج في تقارير واضحة.',
+        ),
+        const BenefitLine(
+          icon: Icons.lock,
+          title: 'أدوات كلمات المرور',
+          subtitle: 'تقييم محلي ونصائح إضافية.',
+        ),
+        const BenefitLine(
+          icon: Icons.photo_library,
+          title: 'مشاركة الصور',
+          subtitle: 'اختيار الصور ومشاركتها بنفسك.',
+        ),
+        const BenefitLine(
+          icon: Icons.notifications_active,
+          title: 'التنبيهات الأمنية',
+          subtitle: 'معلومات توعوية عن المخاطر الرقمية.',
+        ),
+        const SizedBox(height: 15),
+        PlanCard(
+          title: 'الخطة المجانية',
+          price: '0 USD',
+          description: 'الأدوات الأساسية للتوعية والحماية.',
+          buttonText: 'الخطة الحالية',
+          onPressed: null,
+        ),
+        PlanCard(
+          title: 'HAMOUDI PRO الشهري',
+          price: '4.99 USD',
+          description: 'جميع الميزات المدفوعة لمدة شهر.',
+          buttonText: 'الاشتراك الشهري',
+          onPressed: () => showNotActive(context),
+        ),
+        PlanCard(
+          title: 'HAMOUDI PRO السنوي',
+          price: '39.99 USD',
+          description: 'جميع الميزات المدفوعة لمدة سنة.',
+          buttonText: 'الاشتراك السنوي',
+          onPressed: () => showNotActive(context),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'ملاحظة: الأسعار والميزات معروضة حاليًا. '
+          'الدفع والتحقق من الاشتراكات لم يتم تفعليهما بعد.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70),
+        ),
+      ],
+    );
+  }
+}
+
+// فحص الروابط
 
 class LinkCheckerPage extends StatefulWidget {
   const LinkCheckerPage({super.key});
@@ -233,7 +447,6 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
   void checkLink() {
     final input = controller.text.trim();
     warnings = [];
-    result = '';
 
     if (input.isEmpty) {
       setState(() {
@@ -243,7 +456,7 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
       return;
     }
 
-    Uri? uri = Uri.tryParse(input);
+    final uri = Uri.tryParse(input);
 
     if (uri == null || !uri.hasAuthority || uri.host.isEmpty) {
       setState(() {
@@ -254,28 +467,23 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
     }
 
     if (uri.scheme != 'https') {
-      warnings.add('الرابط لا يستخدم اتصال HTTPS الآمن.');
+      warnings.add('الرابط لا يستخدم HTTPS.');
     }
 
     if (uri.userInfo.isNotEmpty) {
-      warnings.add('الرابط يحتوي على بيانات مستخدم قبل اسم الموقع.');
+      warnings.add('الرابط يحتوي على بيانات مستخدم داخل العنوان.');
     }
 
     if (uri.host.startsWith('xn--') || uri.host.contains('.xn--')) {
-      warnings.add('اسم الموقع يحتوي على صيغة نطاق دولية قد تكون مضللة.');
+      warnings.add('اسم النطاق يستخدم صيغة دولية قد تكون مضللة.');
     }
 
-    final ipPattern = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$');
-    if (ipPattern.hasMatch(uri.host)) {
+    if (RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(uri.host)) {
       warnings.add('الرابط يستخدم عنوان IP بدل اسم نطاق واضح.');
     }
 
     if (uri.host.split('.').length > 4) {
       warnings.add('اسم الموقع يحتوي على نطاقات فرعية كثيرة.');
-    }
-
-    if (uri.host.contains('-')) {
-      warnings.add('اسم الموقع يحتوي على شرطات؛ تحقق من الاسم جيدًا.');
     }
 
     setState(() {
@@ -316,22 +524,15 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
             decoration: const InputDecoration(
               hintText: 'https://example.com',
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.language),
             ),
           ),
           const SizedBox(height: 15),
-          ElevatedButton.icon(
+          ElevatedButton(
             onPressed: checkLink,
-            icon: const Icon(Icons.search),
-            label: const Text('افحص الرابط'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: blue,
-              foregroundColor: white,
-              padding: const EdgeInsets.all(15),
-            ),
+            child: const Text('افحص الرابط'),
           ),
           const SizedBox(height: 20),
-          if (result.isNotEmpty) ...[
+          if (result.isNotEmpty)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -343,26 +544,22 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
                       style: TextStyle(
                         color: resultColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 17,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ...warnings.map(
-                      (warning) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text('• $warning'),
-                      ),
-                    ),
+                    const SizedBox(height: 10),
+                    ...warnings.map((warning) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('• $warning'),
+                        )),
                   ],
                 ),
               ),
             ),
-          ],
           const InfoCard(
             icon: Icons.info_outline,
             title: 'تنبيه',
             description:
-                'هذا فحص مبدئي لشكل الرابط فقط. لا يؤكد أن الموقع آمن أو خالٍ من البرمجيات الضارة.',
+                'هذا فحص مبدئي لشكل الرابط فقط، ولا يؤكد أن الموقع آمن أو خالٍ من البرمجيات الضارة.',
           ),
         ],
       ),
@@ -370,7 +567,7 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
   }
 }
 
-// أداة تقييم كلمات المرور
+// تقييم كلمات المرور
 
 class PasswordPage extends StatefulWidget {
   const PasswordPage({super.key});
@@ -392,7 +589,7 @@ class _PasswordPageState extends State<PasswordPage> {
 
     if (password.isEmpty) {
       setState(() {
-        strength = 'أدخل كلمة مرور للتقييم.';
+        strength = 'أدخل كلمة مرور تجريبية.';
         strengthColor = Colors.orange;
       });
       return;
@@ -408,7 +605,7 @@ class _PasswordPageState extends State<PasswordPage> {
     if (RegExp(r'[^A-Za-z0-9]').hasMatch(password)) score++;
 
     if (password.length < 12) {
-      tips.add('اجعل كلمة المرور 12 حرفًا أو أكثر.');
+      tips.add('استخدم 12 حرفًا أو أكثر.');
     }
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
       tips.add('أضف حرفًا إنجليزيًا كبيرًا.');
@@ -420,7 +617,7 @@ class _PasswordPageState extends State<PasswordPage> {
       tips.add('أضف رقمًا.');
     }
     if (!RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
-      tips.add('أضف رمزًا مثل ! أو @ أو #.');
+      tips.add('أضف رمزًا خاصًا.');
     }
 
     setState(() {
@@ -464,11 +661,8 @@ class _PasswordPageState extends State<PasswordPage> {
             decoration: InputDecoration(
               hintText: 'اكتب كلمة مرور تجريبية',
               border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.key),
               suffixIcon: IconButton(
-                icon: Icon(
-                  hidden ? Icons.visibility : Icons.visibility_off,
-                ),
+                icon: Icon(hidden ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => hidden = !hidden),
               ),
             ),
@@ -476,11 +670,6 @@ class _PasswordPageState extends State<PasswordPage> {
           const SizedBox(height: 15),
           ElevatedButton(
             onPressed: evaluatePassword,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: blue,
-              foregroundColor: white,
-              padding: const EdgeInsets.all(15),
-            ),
             child: const Text('تقييم كلمة المرور'),
           ),
           const SizedBox(height: 20),
@@ -501,15 +690,13 @@ class _PasswordPageState extends State<PasswordPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 15),
-                    ...tips.map(
-                      (tip) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text('• $tip'),
-                      ),
-                    ),
+                    const SizedBox(height: 12),
+                    ...tips.map((tip) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('• $tip'),
+                        )),
                     if (tips.isEmpty)
-                      const Text('أحسنت! كلمة المرور تستوفي المعايير الأساسية.'),
+                      const Text('كلمة المرور تستوفي المعايير الأساسية.'),
                   ],
                 ),
               ),
@@ -518,7 +705,7 @@ class _PasswordPageState extends State<PasswordPage> {
             icon: Icons.privacy_tip,
             title: 'خصوصيتك مهمة',
             description:
-                'التقييم يتم على جهازك ولا يرسل كلمة المرور إلى الإنترنت. لا تدخل كلمة مرور حسابك الحقيقية؛ استخدم كلمة تجريبية.',
+                'التقييم محلي ولا يرسل كلمة المرور للإنترنت. استخدم كلمة تجريبية ولا تدخل كلمة مرور حسابك الحقيقية.',
           ),
         ],
       ),
@@ -526,7 +713,7 @@ class _PasswordPageState extends State<PasswordPage> {
   }
 }
 
-// قائمة حماية الهاتف
+// أمان الهاتف
 
 class PhoneSecurityPage extends StatefulWidget {
   const PhoneSecurityPage({super.key});
@@ -537,15 +724,15 @@ class PhoneSecurityPage extends StatefulWidget {
 
 class _PhoneSecurityPageState extends State<PhoneSecurityPage> {
   final items = [
-    'تحديث نظام الهاتف إلى آخر إصدار متاح.',
+    'تحديث نظام الهاتف.',
     'تحديث التطبيقات من المتجر الرسمي.',
     'استخدام قفل شاشة قوي.',
-    'تفعيل المصادقة الثنائية للحسابات المهمة.',
-    'تجنب تثبيت التطبيقات من مصادر مجهولة.',
+    'تفعيل المصادقة الثنائية.',
+    'تجنب التطبيقات من المصادر المجهولة.',
     'مراجعة أذونات التطبيقات.',
-    'تجنب فتح الروابط والمرفقات المشبوهة.',
-    'الاحتفاظ بنسخة احتياطية من الملفات المهمة.',
-    'تفعيل العثور على الهاتف عند توفره.',
+    'تجنب الروابط والمرفقات المشبوهة.',
+    'الاحتفاظ بنسخة احتياطية.',
+    'تفعيل العثور على الهاتف.',
   ];
 
   final Set<int> completed = {};
@@ -564,11 +751,10 @@ class _PhoneSecurityPageState extends State<PhoneSecurityPage> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             'أنجزت ${completed.length} من ${items.length} خطوات',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 15),
           LinearProgressIndicator(
@@ -599,7 +785,7 @@ class _PhoneSecurityPageState extends State<PhoneSecurityPage> {
             icon: Icons.info_outline,
             title: 'معلومة مهمة',
             description:
-                'هذه قائمة إرشادية تساعدك على مراجعة إعدادات جهازك، وليست فحصًا تلقائيًا للهاتف.',
+                'هذه قائمة إرشادية وليست فحصًا تلقائيًا للهاتف.',
           ),
         ],
       ),
@@ -607,7 +793,7 @@ class _PhoneSecurityPageState extends State<PhoneSecurityPage> {
   }
 }
 
-// مشاركة الصور
+// مشاركة الصور - ميزة PRO
 
 class PhotoSharePage extends StatefulWidget {
   const PhotoSharePage({super.key});
@@ -627,9 +813,7 @@ class _PhotoSharePageState extends State<PhotoSharePage> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: panel,
         title: const Text('تأكيد مشاركة الصور'),
-        content: const Text(
-          'هل توافق على اختيار الصور ومشاركتها؟',
-        ),
+        content: const Text('هل توافق على اختيار الصور ومشاركتها؟'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -689,14 +873,11 @@ class _PhotoSharePageState extends State<PhotoSharePage> {
               const SizedBox(height: 20),
               const Text(
                 'مشاركة الصور بأمان',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               const Text(
-                'اختر الصور التي تريد مشاركتها، ولن يتم فتح نافذة المشاركة إلا بعد اختيارك.',
+                'اختر الصور التي تريد مشاركتها بنفسك.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70),
               ),
@@ -727,39 +908,68 @@ class _PhotoSharePageState extends State<PhotoSharePage> {
   }
 }
 
-// الاشتراكات
+// التقارير الأمنية - واجهة أولية
 
-class SubscriptionPage extends StatelessWidget {
-  const SubscriptionPage({super.key});
+class ReportsPage extends StatelessWidget {
+  const ReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(18),
-      children: const [
-        SectionTitle(title: 'خطط الاشتراك'),
-        PlanCard(
-          title: 'الخطة المجانية',
-          price: '0 USD',
-          description: 'ميزات أساسية محدودة.',
+    return Scaffold(
+      appBar: AppBar(title: const Text('التقارير الأمنية')),
+      body: const Padding(
+        padding: EdgeInsets.all(18),
+        child: InfoCard(
+          icon: Icons.analytics,
+          title: 'التقارير الأمنية',
+          description:
+              'ستظهر هنا التقارير بعد ربط أدوات الفحص المتقدمة وتخزين نتائجها.',
         ),
-        PlanCard(
-          title: 'الاشتراك الشهري',
-          price: '4.99 USD',
-          description: 'جميع الميزات والأدوات.',
+      ),
+    );
+  }
+}
+
+// سجل الفحوصات - واجهة أولية
+
+class HistoryPage extends StatelessWidget {
+  const HistoryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('سجل الفحوصات')),
+      body: const Padding(
+        padding: EdgeInsets.all(18),
+        child: InfoCard(
+          icon: Icons.history,
+          title: 'سجل الفحوصات',
+          description:
+              'سيتم عرض نتائج الفحوصات السابقة هنا بعد تنفيذ نظام حفظ السجل.',
         ),
-        PlanCard(
-          title: 'الاشتراك السنوي',
-          price: '39.99 USD',
-          description: 'جميع الميزات والأدوات لمدة سنة.',
+      ),
+    );
+  }
+}
+
+// التنبيهات - واجهة أولية
+
+class AlertsPage extends StatelessWidget {
+  const AlertsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('التنبيهات الأمنية')),
+      body: const Padding(
+        padding: EdgeInsets.all(18),
+        child: InfoCard(
+          icon: Icons.notifications_active,
+          title: 'التنبيهات الأمنية',
+          description:
+              'سيتم إضافة التنبيهات التوعوية بعد ربط خدمة التنبيهات.',
         ),
-        SizedBox(height: 15),
-        Text(
-          'ملاحظة: الخطط والأسعار معروضة حاليًا فقط. الشراء والتحقق من الاشتراكات لم يتم تفعيلهما بعد.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -791,7 +1001,7 @@ class AccountPage extends StatelessWidget {
         FeatureLine(
           icon: Icons.security,
           title: 'سياسة الخصوصية',
-          subtitle: 'نحترم خصوصيتك ولا نشارك صورك دون موافقتك.',
+          subtitle: 'نحترم خصوصيتك وخصوصية بياناتك.',
         ),
         FeatureLine(
           icon: Icons.info,
@@ -803,7 +1013,7 @@ class AccountPage extends StatelessWidget {
   }
 }
 
-// عناصر التصميم المشتركة
+// عناصر التصميم
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -813,7 +1023,7 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15, top: 8),
+      padding: const EdgeInsets.only(bottom: 15, top: 18),
       child: Text(
         title,
         style: const TextStyle(
@@ -831,6 +1041,7 @@ class FeatureLine extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final bool locked;
 
   const FeatureLine({
     super.key,
@@ -838,6 +1049,7 @@ class FeatureLine extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.locked = false,
   });
 
   @override
@@ -855,9 +1067,35 @@ class FeatureLine extends StatelessWidget {
           subtitle,
           style: const TextStyle(color: Colors.white70),
         ),
-        trailing: onTap == null
-            ? null
-            : const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: locked
+            ? const Icon(Icons.lock, color: Colors.orange)
+            : (onTap == null
+                ? null
+                : const Icon(Icons.arrow_forward_ios, size: 16)),
+      ),
+    );
+  }
+}
+
+class BenefitLine extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const BenefitLine({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: blue),
+        title: Text(title),
+        subtitle: Text(subtitle),
       ),
     );
   }
@@ -908,12 +1146,16 @@ class PlanCard extends StatelessWidget {
   final String title;
   final String price;
   final String description;
+  final String buttonText;
+  final VoidCallback? onPressed;
 
   const PlanCard({
     super.key,
     required this.title,
     required this.price,
     required this.description,
+    required this.buttonText,
+    required this.onPressed,
   });
 
   @override
@@ -942,6 +1184,18 @@ class PlanCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(description),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: blue,
+                  foregroundColor: white,
+                ),
+                child: Text(buttonText),
+              ),
+            ),
           ],
         ),
       ),
