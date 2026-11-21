@@ -319,7 +319,8 @@ class _LinkCheckerPageState extends State<LinkCheckerPage> {
     );
 
     setState(() {
-      suspicious = !valid || hasWarning || uri.scheme != 'https';
+      suspicious = !valid || hasWarning ||
+    (valid && uri!.scheme != 'https');
       result = !valid
           ? (widget.isArabic
               ? 'الرابط غير صالح أو لا يستخدم صيغة HTTP/HTTPS صحيحة.'
