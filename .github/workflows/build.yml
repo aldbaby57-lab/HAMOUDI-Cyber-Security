@@ -1,3 +1,4 @@
+
 name: Build HAMOUDI App
 
 on:
@@ -41,7 +42,7 @@ jobs:
             flutter create --platforms=android .
           fi
 
-      - name: Work around purchase plugin lint crash
+      - name: Disable crashing Android plugin lint tasks
         shell: bash
         run: |
           if [ -f android/build.gradle ]; then
@@ -49,7 +50,7 @@ jobs:
 
           subprojects {
               tasks.configureEach { task ->
-                  if (task.path == ':in_app_purchase_android:lintVitalAnalyzeRelease') {
+                  if (task.name == 'lintVitalAnalyzeRelease') {
                       task.enabled = false
                   }
               }
@@ -60,7 +61,7 @@ jobs:
 
           subprojects {
               tasks.configureEach {
-                  if (path == ":in_app_purchase_android:lintVitalAnalyzeRelease") {
+                  if (name == "lintVitalAnalyzeRelease") {
                       enabled = false
                   }
               }
