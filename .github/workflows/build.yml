@@ -41,6 +41,36 @@ jobs:
             flutter create --platforms=android .
           fi
 
+      - name: Work around purchase plugin lint crash
+        shell: bash
+        run: |
+          if [ -f android/build.gradle ]; then
+            cat >> android/build.gradle <<'EOF'
+
+          subprojects {
+              tasks.configureEach { task ->
+                  if (task.path == ':in_app_purchase_android:lintVitalAnalyzeRelease') {
+                      task.enabled = false
+                  }
+              }
+          }
+          EOF
+          elif [ -f android/build.gradle.kts ]; then
+            cat >> android/build.gradle.kts <<'EOF'
+
+          subprojects {
+              tasks.configureEach {
+                  if (path == ":in_app_purchase_android:lintVitalAnalyzeRelease") {
+                      enabled = false
+                  }
+              }
+          }
+          EOF
+          else
+            echo "Android Gradle build file not found"
+            exit 1
+          fi
+
       - name: Install dependencies
         run: flutter pub get
 
