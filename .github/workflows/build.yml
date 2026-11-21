@@ -43,7 +43,7 @@ jobs:
           fi
 
       - name: Analyze Flutter project
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        run: flutter analyze
 
       - name: Analyze Flutter project
         run: flutter analyze
