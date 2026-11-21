@@ -7,8 +7,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -25,21 +29,31 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Create Android platform
-        run: flutter create --platforms=android .
+      - name: Check Flutter project
+        run: |
+          test -f pubspec.yaml
+          test -f lib/main.dart
+
+      - name: Create Android platform if missing
+        run: |
+          if [ ! -d android ]; then
+            flutter create --platforms=android .
+          fi
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Android APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease -x lintVitalAnalyzeRelease
+      - name: Analyze Flutter project
+        run: flutter analyze
+
+      - name: Build release APK
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: HAMOUDI-Android-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
