@@ -45,10 +45,10 @@ class _HamoudiAppState extends State<HamoudiApp> {
           isArabic: isArabic,
           onLanguageChanged: (value) => setState(() => isArabic = value),
           themeMode: themeMode,
-          onThemeChanged: (value) => setState(() => themeMode = value),
-        ),
-      ),
-
+          onThemeChanged: (value) => setState(() => themeMode = 
+    );
+  }
+}
 class MainScreen extends StatefulWidget {
   final bool isArabic;
   final ValueChanged<bool> onLanguageChanged;
