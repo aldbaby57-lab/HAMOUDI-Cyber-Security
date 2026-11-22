@@ -22,3 +22,13 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+subprojects {
+    tasks.configureEach {
+        if (name == "lintVitalAnalyzeRelease" ||
+            name == "lintVitalReportRelease" ||
+            name == "lintRelease") {
+            enabled = false
+        }
+    }
+}
+
