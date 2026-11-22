@@ -35,12 +35,77 @@ jobs:
         run: |
           test -f pubspec.yaml
           test -f lib/main.dart
+          test -f google-services.json
 
       - name: Setup Android platform
         run: |
           if [ ! -d android ]; then
             flutter create --platforms=android .
           fi
+
+      - name: Configure Firebase Android
+        shell: bash
+        run: |
+          mkdir -p android/app
+          cp google-services.json android/app/google-services.json
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          settings = next(
+              (p for p in [
+                  Path("android/settings.gradle.kts"),
+                  Path("android/settings.gradle")
+              ] if p.exists()),
+              None
+          )
+
+          app = next(
+              (p for p in [
+                  Path("android/app/build.gradle.kts"),
+                  Path("android/app/build.gradle")
+              ] if p.exists()),
+              None
+          )
+
+          if settings is None or app is None:
+              raise SystemExit("Android Gradle files not found")
+
+          s = settings.read_text()
+
+          if "com.google.gms.google-services" not in s:
+              if settings.suffix == ".kts":
+                  line = '    id("com.google.gms.google-services") version "4.6.0" apply false\n'
+              else:
+                  line = "    id 'com.google.gms.google-services' version '4.6.0' apply false\n"
+
+              if "plugins {" not in s:
+                  raise SystemExit("Gradle plugins block not found in settings")
+              s = s.replace("plugins {", "plugins {\n" + line, 1)
+
+          settings.write_text(s)
+
+          a = app.read_text()
+
+          if "com.google.gms.google-services" not in a:
+              if "plugins {" in a:
+                  if app.suffix == ".kts":
+                      line = '    id("com.google.gms.google-services")\n'
+                  else:
+                      line = "    id 'com.google.gms.google-services'\n"
+                  a = a.replace("plugins {", "plugins {\n" + line, 1)
+              elif "apply plugin: 'com.android.application'" in a:
+                  a = a.replace(
+                      "apply plugin: 'com.android.application'",
+                      "apply plugin: 'com.android.application'\napply plugin: 'com.google.gms.google-services'",
+                      1
+                  )
+              else:
+                  raise SystemExit("Could not configure Google Services plugin")
+
+          app.write_text(a)
+          print("Firebase Android configuration completed")
+          PY
 
       - name: Disable crashing Android plugin lint tasks
         shell: bash
