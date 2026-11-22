@@ -39,19 +39,15 @@ class _HamoudiAppState extends State<HamoudiApp> {
         ),
         scaffoldBackgroundColor: const Color(0xFF08131F),
         useMaterial3: true,
-      ),
+      ), 
       home: AuthGate(
-  home: MainScreen(
+        home: MainScreen(
+          isArabic: isArabic,
+          onLanguageChanged: (value) => setState(() => isArabic = value),
+          themeMode: themeMode,
+          onThemeChanged: (value) => setState(() => themeMode = value),
+        ),
       ),
-),
-        isArabic: isArabic,
-        onLanguageChanged: (value) => setState(() => isArabic = value),
-        themeMode: themeMode,
-        onThemeChanged: (value) => setState(() => themeMode = value),
-      ),
-    );
-  }
-}
 
 class MainScreen extends StatefulWidget {
   final bool isArabic;
