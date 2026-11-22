@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build HAMOUDI Android
+    name: Generate Platforms and Build Android
     runs-on: ubuntu-latest
 
     steps:
@@ -39,26 +39,18 @@ jobs:
           test -f lib/main.dart
           test -f google-services.json
 
-      - name: Generate iOS platform
+      - name: Generate Android and iOS platforms
         run: |
-          if [ ! -f ios/Runner.xcodeproj/project.pbxproj ]; then
-            flutter create --platforms=ios .
-          fi
+          flutter create --platforms=android,ios .
 
-      - name: Save iOS platform to GitHub
+      - name: Save platform folders to GitHub
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ios android
+          git add -f android ios
           if ! git diff --cached --quiet; then
-            git commit -m "Add iOS platform files"
+            git commit -m "Generate Android and iOS platform folders"
             git push origin HEAD:main
-          fi
-
-      - name: Setup Android platform
-        run: |
-          if [ ! -d android ]; then
-          flutter create --platforms=android,ios .
           fi
 
       - name: Configure Firebase Android
@@ -99,6 +91,7 @@ jobs:
 
               if "plugins {" not in s:
                   raise SystemExit("Gradle plugins block not found")
+
               s = s.replace("plugins {", "plugins {\n" + line, 1)
 
           settings.write_text(s)
@@ -111,7 +104,9 @@ jobs:
                       line = '    id("com.google.gms.google-services")\n'
                   else:
                       line = "    id 'com.google.gms.google-services'\n"
+
                   a = a.replace("plugins {", "plugins {\n" + line, 1)
+
               elif "apply plugin: 'com.android.application'" in a:
                   a = a.replace(
                       "apply plugin: 'com.android.application'",
@@ -125,7 +120,7 @@ jobs:
           print("Firebase Android configuration completed")
           PY
 
-      - name: Disable crashing Android plugin lint tasks
+      - name: Disable Android release lint task
         shell: bash
         run: |
           if [ -f android/build.gradle ]; then
@@ -162,7 +157,7 @@ jobs:
         continue-on-error: true
         run: flutter analyze
 
-      - name: Build release APK
+      - name: Build Android APK
         run: flutter build apk --release
 
       - name: Verify APK
@@ -170,7 +165,7 @@ jobs:
           test -f build/app/outputs/flutter-apk/app-release.apk
           ls -lh build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Upload APK
+      - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: HAMOUDI-Android-APK
