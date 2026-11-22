@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ios
+          git add ios android
           if ! git diff --cached --quiet; then
             git commit -m "Add iOS platform files"
             git push origin HEAD:main
@@ -58,7 +58,7 @@ jobs:
       - name: Setup Android platform
         run: |
           if [ ! -d android ]; then
-            flutter create --platforms=android .
+          flutter create --platforms=android,ios .
           fi
 
       - name: Configure Firebase Android
