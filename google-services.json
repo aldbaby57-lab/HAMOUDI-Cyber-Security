@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161951827683",
+    "project_id": "hamoudi-cyber-labs",
+    "storage_bucket": "hamoudi-cyber-labs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161951827683:android:96abdeaab7c632c92667d6",
+        "android_client_info": {
+          "package_name": "com.example.hamoudi_cyber_security"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHK-s4rvcMiqJq_vBUozopvOIAnAwwrw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
