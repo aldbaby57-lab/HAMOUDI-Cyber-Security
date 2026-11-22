@@ -40,7 +40,10 @@ class _HamoudiAppState extends State<HamoudiApp> {
         scaffoldBackgroundColor: const Color(0xFF08131F),
         useMaterial3: true,
       ),
-      home: MainScreen(
+      home: AuthGate(
+  home: MainScreen(
+      ),
+),
         isArabic: isArabic,
         onLanguageChanged: (value) => setState(() => isArabic = value),
         themeMode: themeMode,
