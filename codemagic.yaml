@@ -1,0 +1,52 @@
+workflows:
+  hamoudi-android:
+    name: HAMOUDI Cyber Security Android
+    max_build_duration: 60
+    instance_type: linux_x2
+
+    environment:
+      flutter: 3.47.9
+      java: 21
+
+    scripts:
+      - name: Configure Firebase
+        script: |
+          mkdir -p android/app
+          cp google-services.json android/app/google-services.json
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          settings = Path("android/settings.gradle.kts")
+          app = Path("android/app/build.gradle.kts")
+
+          s = settings.read_text()
+          if "com.google.gms.google-services" not in s:
+              line = '    id("com.google.gms.google-services") version "4.6.0" apply false\n'
+              s = s.replace("plugins {", "plugins {\n" + line, 1)
+              settings.write_text(s)
+
+          a = app.read_text()
+          if "com.google.gms.google-services" not in a:
+              a = a.replace(
+                  "plugins {",
+                  'plugins {\n    id("com.google.gms.google-services")\n',
+                  1
+              )
+              app.write_text(a)
+
+          print("Firebase configured")
+          PY
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Build Android APK
+        script: flutter build apk --release
+
+      - name: Build Android App Bundle
+        script: flutter build appbundle --release
+
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
